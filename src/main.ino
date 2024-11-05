@@ -3,15 +3,13 @@
 #include "..\lib\Rover.h"
 // Define motor control pins
 
-char Speed_dir_s ; 
-int Speed_dir ;
-int speed;
+String Speed_dir_s ; 
 
 BluetoothSerial SerialBT;
 
 void setup(){
   Serial.begin(115200);
-  SerialBT.begin("ESP32test");
+  SerialBT.begin("Rover");
   // Set the motor control pins as outputs
   pinMode(pwmPinA, OUTPUT);
   pinMode(dirPinA, OUTPUT);
@@ -27,30 +25,26 @@ void setup(){
   ledcAttachPin(pwmPinB, pwmChannelB);
 }
 
-void loop() {
 
-    if (SerialBT.available()) {
-         Speed_dir_s = SerialBT.read();
-        switch (Speed_dir_s)
-        {
-        case 'F' :
-            forward(255);
-            break;
-        case 'B' :
-            backward(255);
-            break;
-        case 'R' :
-            right_tank_turn(255);
-            break;
-        case 'L' :
-            left_tank_turn(255);
-            break;
-        default:
-            Stop();
-        }
-    } else
+void loop() {
+  
+    while ( i <= count)
     {
-    printf("No data received");
+      while(SerialBT.available()) {
+         input = SerialBT.readString();
+      }
+
+      
+      int index = 0;
+      int start = 0;
+      for (int j = 0; j < input.length(); j++) { 
+        if (input[j] == ' ' || j == input.length() - 1) {
+          PWM_DIR[index] = input.substring(start, j).toInt();
+          start = j + 1;
+        }
+      }
     }
     
+    move(PWM_DIR[1],PWM_DIR[2]);
+
 }
