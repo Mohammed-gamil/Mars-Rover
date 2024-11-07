@@ -42,8 +42,7 @@ void loop() {
     for (int i = 0; i < 4; i++) {
       int spaceIndex = DATA.indexOf(' ', start);
       String valueString = DATA.substring(start, spaceIndex);
-      PWM_DIR[i] = map(valueString.toInt(), -32000, 32000, -255,
-                       255);  // Convert the substring to an integer
+      PWM_DIR[i] = map(valueString.toInt(), -32000, 32000, -255,255);  // Convert the substring to an integer
       start = spaceIndex + 1; // Move start to the next character after space
     }
 
@@ -75,3 +74,4 @@ void loop() {
     move(PWM_DIR[1], PWM_DIR[2]);
     delay(50);
   }
+}

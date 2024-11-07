@@ -1,33 +1,33 @@
 #include "Rover.h"
 #include <Arduino.h>
 
-void move(int speedx, int speedy) {
+void move(int speedy, int speedx) {
   int speed_motor_r = speedy - speedx;
   int speed_motor_l = speedy + speedx;
-  if (speed_motor_r > 3500) {
+  if (speed_motor_r > 28) {
     digitalWrite(dirPinA, HIGH);
     Serial.print("m_r:f ");
-  } else if (speed_motor_r < -3500) {
+  } else if (speed_motor_r < -28) {
     digitalWrite(dirPinA, LOW);
     Serial.print("m_r:b ");
   } else
     speed_motor_r = 0;
 
-  if (speed_motor_l > 3500) {
+  if (speed_motor_l > 28) {
     digitalWrite(dirPinB, HIGH);
     Serial.print("m_L:F ");
-  } else if (speed_motor_l < -3500) {
+  } else if (speed_motor_l < -28) {
     digitalWrite(dirPinB, LOW);
     Serial.print("m_L:b ");
   } else {
     speed_motor_l = 0;
   }
-  speed_motor_r = map(abs(speed_motor_r), 3000, 32000, 0, 255);
-  speed_motor_l = map(abs(speed_motor_l), 3000, 32000, 0, 255);
+  // speed_motor_r = map(abs(speed_motor_r), 3000, 32000, 0, 255);
+  // speed_motor_l = map(abs(speed_motor_l), 3000, 32000, 0, 255);
 
-  ledcWrite(pwmChannelA, (speed_motor_r));
+  ledcWrite(pwmChannelA, abs(speed_motor_r));
   Serial.print(speed_motor_r);
-  ledcWrite(pwmChannelB, (speed_motor_l));
+  ledcWrite(pwmChannelB, abs(speed_motor_l));
   Serial.print("");
   Serial.println(speed_motor_l);
 }
