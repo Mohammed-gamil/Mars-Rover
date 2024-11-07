@@ -1,35 +1,18 @@
+#include "Rover.h"
 #include <Arduino.h>
 #include <BluetoothSerial.h>
-// #include "lib/Rover.h"
+// #include <..\lib\src\RemoteXY.h>
+
 // Define motor control pins
 
-void forward();
-void backward();
-void right_tank_turn();
-void left_tank_turn();
-void setup();
-
-const int pwmPinA = 3; // PWM pin for motor A
-const int dirPinA = 4; // Direction pin for motor A
-const int pwmPinB = 5; // PWM pin for motor B
-const int dirPinB = 6; // Direction pin for motor B
-
-// Define PWM channels
-const int pwmChannelA = 0;
-const int pwmChannelB = 1;
-
-// Define PWM properties
-const int freq = 5000;
-const int resolution = 8;
-String Speed_dir_s ; 
-int Speed_dir ;
-int speed;
+String Speed_dir_s;
 
 BluetoothSerial SerialBT;
 
-void setup(){
+void setup() {
   Serial.begin(115200);
-  SerialBT.begin("ESP32test");
+  SerialBT.begin("Rover");
+  // Serial.SetTimeout(20);
   // Set the motor control pins as outputs
   pinMode(pwmPinA, OUTPUT);
   pinMode(dirPinA, OUTPUT);
@@ -37,89 +20,58 @@ void setup(){
   pinMode(dirPinB, OUTPUT);
 
   // Configure PWM functionalities
-  ledcSetup(pwmChannelA, freq, resolution);
-  ledcSetup(pwmChannelB, freq, resolution);
+  // ledcSetup(pwmChannelA, freq, resolution);
+  // ledcSetup(pwmChannelB, freq, resolution);
 
   // Attach the PWM channels to the GPIO pins
-  ledcAttachPin(pwmPinA, pwmChannelA);
-  ledcAttachPin(pwmPinB, pwmChannelB);
+  // ledcAttachPin(pwmPinA, pwmChannelA);
+  // ledcAttachPin(pwmPinB, pwmChannelB);
 }
 
 void loop() {
-  
-    Speed_dir = Speed_dir_s.toInt(); //100070
-    int direction = Speed_dir %1000 ; //070
-    speed = (Speed_dir % 1000000)/1000; //100
-    int Speed_m = map(speed , 0 , 100 , 0 , 255);
-    
-    if (speed > 50) {
-      if (direction > 0 && direction < 50)
-      {
-        left_tank_turn(Speed_m);
-      }else if (direction > 50 && direction < 100)
-      {
-        right_tank_turn(Speed_m);
-      }
-      } else {
-        forward(Speed_m);
-      }
-      
-    if (speed < 50) {
-      if (direction > 0 && direction < 50)
-      {
-        left_tank_turn(Speed_m);
-      }else if (direction > 50 && direction < 100)
-      {
-        right_tank_turn(Speed_m);
-      }
-      } else {
-        backward(Speed_m);
+
+  if (SerialBT.available()) {
+    DATA = SerialBT.readStringUntil('#');
+
+    // Serial.println(DATA + "\n");
+
+    int index = 0;
+    // int PWM_DIR[4]; // Assuming there are 4 values in each line
+    int start = 0;
+
+    for (int i = 0; i < 4; i++) {
+      int spaceIndex = DATA.indexOf(' ', start);
+      String valueString = DATA.substring(start, spaceIndex);
+      PWM_DIR[i] = map(valueString.toInt(), -32000, 32000, -255,
+                       255);  // Convert the substring to an integer
+      start = spaceIndex + 1; // Move start to the next character after space
     }
 
-  // int signal = SerialBT.read();
-  // if(signal == 1){
-  //   forward();
-  // }
-  // if (signal == 2) {
-  //   backward();
-  // }
-  // if (signal == 3) {
-  //   right_tank_turn();
-  // }
-  // if (signal == 3) {
-  //   left_tank_turn();
-  // }
-}
-void forward (int speed){
+    // Print out the parsed integers for verification
+    // for (int i = 0; i < 4; i++) {
+    //   Serial.print("Value ");
+    //   Serial.print(i + 1);
+    //   Serial.print(": ");
+    //   Serial.println(PWM_DIR[i]);
+    // }
+    DATA = " ";
 
-  // Move forward
-  digitalWrite(dirPinA, HIGH);
-  digitalWrite(dirPinB, HIGH);
-  ledcWrite(pwmChannelA, speed);
-  ledcWrite(pwmChannelB, speed);
-  delay(2000);
-}
-void backward(int speed) {
-  // Move backward
-  digitalWrite(dirPinA, LOW);
-  digitalWrite(dirPinB, LOW);
-  ledcWrite(pwmChannelA, speed);
-  ledcWrite(pwmChannelB, speed);
-  delay(2000);
-}
-void right_tank_turn(int speed) {
-  // Right tank turn
-  digitalWrite(dirPinA, HIGH);
-  digitalWrite(dirPinB, LOW);
-  ledcWrite(pwmChannelA, speed);
-  ledcWrite(pwmChannelB, speed);
-  delay(2000);
-}
-void left_tank_turn(int speed) {
-  // left tank turn
-  digitalWrite(dirPinA, LOW);
-  digitalWrite(dirPinB, HIGH);
-  ledcWrite(pwmChannelA, speed);
-  ledcWrite(pwmChannelB, speed);
-  delay(2000);
-}
+    // while (i <= count) {
+    //   while (SerialBT.available()) {
+    //     input = SerialBT.readStringUntil('#');
+    //   }
+
+    //   int index = 0;
+    //   int start = 0;
+    //   for (int j = 0; j < input.length(); j++) {
+    //     if (input[j] == ' ' || j == input.length() - 1) {
+    //       PWM_DIR[index] = input.substring(start, j).toInt();
+    //       start = j + 1;
+    //     }
+    //   }
+    // }
+    // PWM_DIR[1] = (map(RemoteXY.joystick_01_x, -100, 100, -32000, 32000));
+    // PWM_DIR[2] = (map(RemoteXY.joystick_01_y, -100, 100, -32000, 32000));
+    move(PWM_DIR[1], PWM_DIR[2]);
+    delay(50);
+  }
